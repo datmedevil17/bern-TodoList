@@ -5,6 +5,7 @@ const { ethers } = require("ethers");
 
 const app = express();
 const port = 3000;
+app.use(express.json())
 app.use(cors())
 
 const privateKey = "529038177e54eb14bb591eaf0e7517112d7f4189f372f4a15a7d0229236adf7f"
@@ -46,6 +47,33 @@ app.get("/api/ethereum/all-tasks", async(req,res)=>{
   } catch (error) {
     console.log(error)
   }
+})
+
+const dateClashCheck=async(taskDate)=>{
+  const tasks = await contract.allTask()
+  const foundTask= tasks.find(task=>task.date===taskDate)
+  if(foundTask){
+    return foundTask.name;
+  }
+  return "No Task Found"
+}
+
+app.post("/api/ethereum/create-task", async(req,res)=>{
+  const {date} = req.body;
+  console.log(req.body) 
+  const task = await dateClashCheck(date);
+  try{
+    if(task!=="No Task Found"){
+      res.status(409).json({status:409,message:"Date Clash"})
+    }else{
+      res.status(200).json({status:200,message:"Task can be added"})
+    }
+ 
+  }catch(error){ 
+    console.log(error)     
+  }
+   
+
 })
 
 
